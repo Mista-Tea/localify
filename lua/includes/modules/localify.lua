@@ -58,17 +58,17 @@ languages = {
 	nl        = "Dutch",
 	no        = "Norwegian",
 	pl        = "Polish",
-	["pt-br"] = "Portuguese (Brazil)",
-	["pt-pt"] = "Portuguese (Portugal)",
+	["pt-br"] = "Brazilian Portuguese",
+	["pt-pt"] = "Portuguese",
 	ru        = "Russian",
 	sk        = "Slovak",
-	["sv-se"] = "Swedish (Sweden)",
+	["sv-se"] = "Swedish",
 	th        = "Thai",
 	tr        = "Turkish",
 	uk        = "Ukranian",
 	vi        = "Vietnamese",
-	["zh-cn"] = "Chinese (China, Simplified)",
-	["zh-tw"] = "Chinese (Taiwan, Traditional)",
+	["zh-cn"] = "Simplified Chinese",
+	["zh-tw"] = "Traditional Chinese",
 }
 
 tokens = tokens or {
