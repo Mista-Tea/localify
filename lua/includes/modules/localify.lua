@@ -71,7 +71,7 @@ languages = {
 	["zh-tw"] = "Traditional Chinese",
 }
 
-tokens = tokens or {
+localizations = localizations or {
 	bg        = {},
 	cs        = {},
 	da        = {},
@@ -116,12 +116,164 @@ local tostring = tostring
 local GetConVar = GetConVar
 local AddCSLuaFile = AddCSLuaFile
 
-DEFAULT = DEFAULT or "en"
+FALLBACK = FALLBACK or "en"
 CVarLocale = GetConVar( "gmod_language" )
 
 --[[--------------------------------------------------------------------------
 --	Namespace Functions
 --------------------------------------------------------------------------]]--
+
+--[[--------------------------------------------------------------------------
+-- 	localify.Bind( string, string )
+--
+--	Binds the token (key) and localized phrase (value) to the given language (lang).
+--
+--	Example: localify.Bind( "en", "#Hello", "Hello" )
+--	Example: localify.Bind( "es", "#Hello", "Hola" )
+--	Example: localify.Bind( "fr", "#Hello", "Bonjour" )
+--]]--
+function Bind( lang, key, value )
+	if ( not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
+	
+	localizations[ lang:lower() ][ key ] = value
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.Localize( string, string )
+--
+--	Returns the localized phrase associated with the token (key).
+--	If a language (lang) is provided, the phrase bound to that language will be returned.
+--	If no language is provided, the language will default to the client or server's locale.
+--	If a localized phrase is not found and returnKey is true-ful,  the key will be returned.
+--	If a localized phrase is not found and returnKey is false-ful, the phrase associated with the fallback language (en' by default) will be returned, if any.
+--	Otherwise, nil will be returned if no binding exists.
+--
+--	Example: local str = localify.Localize( "#Hello" )             -- Returns either the locale's binding or the default binding (if any)
+--	Example: local str = localify.Localize( "#Hello", "es" )       -- Returns either a Spanish binding, the locale's binding, or the default binding (if any)
+--	Example: local str = localify.Localize( "#Hello", "fr" )       -- Returns either a French  binding, the locale's binding, or the default binding (if any)
+--	Example: local str = localify.Localize( "#Hello", "de", true ) -- Returns either a German  binding, the locale's binding, or the key
+--	Example: local str = localify.Localize( "#Hello",  nil, true ) -- Returns either the locale's binding or the key
+--]]--
+function Localize( key, lang, returnKey )
+	if ( lang and not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
+	
+	local tbl = localizations[ (lang and lang:lower()) or GetLocale() ]
+
+	return ( tbl and tbl[ key ] )                                             -- If there is a bind, return it
+		or ( returnKey and key )                                              -- If there is no bind and we want to return the key on failure, return the key
+		or ( localizations[ FALLBACK ] and localizations[ FALLBACK ][ key ] ) -- If there is a bind in the fallback language, return it
+		or nil                                                                -- Otherwise return nil
+end
+
+
+
+--[[--------------------------------------------------------------------------
+-- 	localify.AddLanguage( string, string )
+--
+--	Adds a non-GMod language to the table of valid languages.
+--
+--	Example: localify.AddLanguage( "zom", "Zombie" )
+--	Example: localify.AddLanguage( "fil", "Filipino" )
+--]]--
+function AddLanguage( lang, name )
+	if ( IsValidLanguage( lang ) ) then return end
+	
+	    languages[ lang:lower() ] = name
+	localizations[ lang:lower() ] = {}
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.RemoveLanguage( string )
+--
+--	Removes a language from the table of valid languages.
+--	If the removed language was the fallback language, "en" (English) will be
+--	set as the new fallback language automatically.
+--
+--	Example: localify.RemoveLanguage( "zom" )
+--	Example: localify.RemoveLanguage( "fil" )
+--]]--
+function RemoveLanguage( lang )
+	if ( not IsValidLanguage( lang ) ) then return end
+	
+	    languages[ lang:lower() ] = nil
+	localizations[ lang:lower() ] = nil
+	
+	if ( lang:lower() == FALLBACK ) then FALLBACK = "en" end
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.IsValidLanguage()
+--
+--	Checks if the passed 2- or 4-letter language code is supported by Localify.
+--	Returns true if valid, false if invalid.
+--
+--	Example: localify.IsValidLanguage( "vi" ) --  true by default
+--	Example: localify.IsValidLanguage( "zz" ) -- false by default
+--]]--
+function IsValidLanguage( lang )
+	return lang and languages[ lang:lower() ]
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.SetFallbackLanguage()
+--
+--	Sets the fallback language to use when a localized phrase is unavailable.
+--	This is set to "en" (English) by default.
+--
+--	Example: localify.SetFallbackLanguage( "de" ) -- fallback language is now German
+--]]--
+function SetFallbackLanguage( lang )
+	if ( not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
+	
+	FALLBACK = lang:lower()
+end
+
+
+
+--[[--------------------------------------------------------------------------
+-- 	localify.GetLocale()
+--
+--	Returns the client or server's in-game locale (separate from system locale).
+--	Returns the fallback language if the cvar is empty.
+--	The cvar holding this value is "gmod_language".
+--]]--
+function GetLocale()
+	return CVarLocale:GetString() == "" and FALLBACK or CVarLocale:GetString():lower()
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.GetLanguages( string )
+--
+--	Returns the table of valid languages and their associated names.
+--]]--
+function GetLanguages()
+	return languages
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.GetLocalizations( string )
+--
+--	Returns every bound localization, the bindings of the given language, or nil
+--	if no language was found. If the language is valid but doesn't contain any bindings,
+--	an empty table will be returned.
+--
+--	Example: localify.GetLocalizations()       -- returns bindings for every language
+--	Example: localify.GetLocalizations( "en" ) -- returns all English bindings
+--]]--
+function GetLocalizations( lang )
+	return ( not lang and localizations ) or ( lang and localizations[ lang:lower() ] ) or nil
+end
+
+--[[--------------------------------------------------------------------------
+-- 	localify.GetFallbackLanguage()
+--
+--	Returns the current fallback language ("en" by default).
+--]]--
+function GetFallbackLanguage()
+	return FALLBACK
+end
+
+
 
 --[[--------------------------------------------------------------------------
 -- 	localify.LoadSharedFile( string )
@@ -151,71 +303,4 @@ end
 function LoadClientFile( path )
 	if ( SERVER ) then AddCSLuaFile( path ) return end
 	include( path )
-end
-
---[[--------------------------------------------------------------------------
--- 	localify.IsValidLanguage()
---
---	Checks if the passed 2- or 4-letter language code is supported by Localify.
---	Returns true if valid, false if invalid/
---]]--
-function IsValidLanguage( lang )
-	return lang and languages[ lang:lower() ]
-end
-
---[[--------------------------------------------------------------------------
--- 	localify.GetLocale()
---
---	Retrieves the client or server's in-game locale (separate from system locale).
---	The cvar holding this value is "gmod_language".
---]]--
-function GetLocale()
-	return CVarLocale:GetString() == "" and DEFAULT or CVarLocale:GetString():lower()
-end
-
---[[--------------------------------------------------------------------------
--- 	localify.SetDefault()
---
---	Sets the fallback language to use when a localized phrase is unavailable.
---	This is set to "en" (English) by default.
---]]--
-function SetDefault( lang )
-	if ( not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
-	
-	DEFAULT = lang:lower()
-end
-
---[[--------------------------------------------------------------------------
--- 	localify.Bind( string, string )
---
---	Binds the token (key) and localized phrase (value) to the given language (lang).
---
---	Example: localify.Bind( "en", "#Hello", "Hello" )
---	Example: localify.Bind( "es", "#Hello", "Hola" )
---	Example: localify.Bind( "fr", "#Hello", "Bonjour" )
---]]--
-function Bind( lang, key, value )
-	if ( not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
-	
-	tokens[ lang:lower() ][ key ] = value
-end
-
---[[--------------------------------------------------------------------------
--- 	localify.Localize( string, string )
---
---	Retrieves the localized phrase associated with the token (key).
---	If a language (lang) is provided, the phrase bound to that language will be returned.
---	If no language is provided, the language will default to the client or server's locale.
---	If a localized phrase is not found, the phrase associated with the default language
---	('en' unless manually changed) will be returned, if any.
---	Will return nil if no binding exists.
---
---	Example: local str = localify.Localize( "#Hello" )
---	Example: local str = localify.Localize( "#Hello", "es" )
---	Example: local str = localify.Localize( "#Hello", "fr" )
---]]--
-function Localize( key, lang )
-	if ( lang and not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
-	
-	return tokens[ (lang and lang:lower()) or GetLocale() ][ key ] or tokens[ DEFAULT ][ key ]
 end
