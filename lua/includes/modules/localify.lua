@@ -117,7 +117,6 @@ local GetConVar = GetConVar
 local AddCSLuaFile = AddCSLuaFile
 
 FALLBACK = FALLBACK or "en"
-CVarLocale = GetConVar( "gmod_language" )
 
 --[[--------------------------------------------------------------------------
 --	Namespace Functions
@@ -231,14 +230,15 @@ end
 
 
 --[[--------------------------------------------------------------------------
--- 	localify.GetLocale()
+-- 	localify.GetLocale( player )
 --
 --	Returns the client or server's in-game locale (separate from system locale).
 --	Returns the fallback language if the cvar is empty.
 --	The cvar holding this value is "gmod_language".
 --]]--
-function GetLocale()
-	return CVarLocale:GetString() == "" and FALLBACK or CVarLocale:GetString():lower()
+function GetLocale( ply )
+	return ( SERVER and ply and ply:GetInfo( "localify_language" ):lower() )
+	    or ( GetConVarString( "localify_language" ) == "" and FALLBACK or GetConVarString( "localify_language" ):lower() )
 end
 
 --[[--------------------------------------------------------------------------
@@ -303,4 +303,21 @@ end
 function LoadClientFile( path )
 	if ( SERVER ) then AddCSLuaFile( path ) return end
 	include( path )
+end
+
+
+
+if ( CLIENT ) then
+
+	-- Create a client cvar that copies the gmod_language cvar so that we can retrieve it from
+	-- the server with ply:GetInfo( "localify_language" )
+	CreateClientConVar( "localify_language", GetConVarString( "gmod_language" ), false, true )
+
+	-- Check for changes to the gmod_language cvar and replicate them to localify_language
+	cvars.AddChangeCallback( "gmod_language", function( name, old, new )
+		if ( not IsValidLanguage( new ) ) then return end
+		
+		RunConsoleCommand( "localify_language", new )
+	end, "localify" )
+
 end
