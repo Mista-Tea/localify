@@ -5,7 +5,7 @@ require( "localify" )
 
 
 ### Bind examples
-
+```lua
 	-- English
 	localify.Bind( "en",    "Fruit_Banana", "Banana" )
 	localify.Bind( "en",    "Fruit_Apple",  "Apple" )
@@ -21,11 +21,11 @@ require( "localify" )
 	-- French
 	localify.Bind( "fr",    "Fruit_Banana", "Banane" )
 	localify.Bind( "fr",    "Fruit_Apple",  "Pomme"  )
-
+```
 
 
 ### Localize examples
-
+```lua
 	print( localify.Localize( "Fruit_Banana" ) )
 	-- "Banana"  if gmod_language is "en"
 	-- "Manzana" if gmod_language is "es"
@@ -44,11 +44,11 @@ require( "localify" )
 	print( localify.Localize( "Fruit_Banana", "de" ) )
 	-- Prints "Banana" because no binding was found for "de" (German), which results in a lookup to
 	-- the default language "en" (English)
-
+```
 
 
 ### Changing the fallback language
-
+```lua
 	localify.SetFallbackLanguage( "fr" )
 	-- Change the fallback language to French
 
@@ -62,11 +62,11 @@ require( "localify" )
 
 	print( localify.Localize( "Fruit_Banana", "de" ) )
 	-- Returns nil because no binding was found for "de" or the new default "pt-BR" (Brazilian Portuguese)
-
+```
 
 
 ### Loading localization files
-
+```lua
 	localify.SetFallbackLanguage( "en" )
 	-- Change the fallback language back to English
 
@@ -84,11 +84,11 @@ require( "localify" )
 
 	print( L"#Shield" )
 	print( L("#Shield", "he" ) )
-
+```
 
 
 ### Adding and removing languages
-
+```lua
 	localify.AddLanguage( "zom", "Zombie" )
 	localify.Bind( "zom", "Attack1", "Braaaaains" )
 	localify.Bind( "zom", "Attack2", "Uuuuuuuungh" )
@@ -112,3 +112,4 @@ require( "localify" )
 
 	print( L"Attack1" )
 	-- Returns nil because the Zombie language no longer exists and no "en" binding was found
+```
