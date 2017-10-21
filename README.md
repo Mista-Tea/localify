@@ -1,10 +1,10 @@
-##Localify
+## Localify
 
 require( "localify" )
 
 
 
-###Bind examples
+### Bind examples
 
 	-- English
 	localify.Bind( "en",    "Fruit_Banana", "Banana" )
@@ -24,7 +24,7 @@ require( "localify" )
 
 
 
-###Localize examples
+### Localize examples
 
 	print( localify.Localize( "Fruit_Banana" ) )
 	-- "Banana"  if gmod_language is "en"
@@ -47,7 +47,7 @@ require( "localify" )
 
 
 
-###Changing the fallback language
+### Changing the fallback language
 
 	localify.SetFallbackLanguage( "fr" )
 	-- Change the fallback language to French
@@ -65,7 +65,7 @@ require( "localify" )
 
 
 
-###Loading localization files
+### Loading localization files
 
 	localify.SetFallbackLanguage( "en" )
 	-- Change the fallback language back to English
@@ -87,7 +87,7 @@ require( "localify" )
 
 
 
-###Adding and removing languages
+### Adding and removing languages
 
 	localify.AddLanguage( "zom", "Zombie" )
 	localify.Bind( "zom", "Attack1", "Braaaaains" )
