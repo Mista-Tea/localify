@@ -155,7 +155,12 @@ end
 --	Example: local str = localify.Localize( "#Hello",  nil, true ) -- Returns either the locale's binding or the key
 --]]--
 function Localize( key, lang, returnKey )
-	if ( lang and not IsValidLanguage( lang ) ) then error( "Invalid language provided ('"..tostring(lang).."')" ) return end
+	-- If for some reason the given language isn't valid (e.g. user set it themselves), show an
+	-- error in console letting them know and try to use the fallback language.
+	if ( lang and not IsValidLanguage( lang ) ) then
+		ErrorNoHalt( "Invalid localify_language provided ('"..tostring(lang).."')\n" )
+		lang = FALLBACK
+	end
 	
 	local tbl = localizations[ (lang and lang:lower()) or GetLocale() ]
 
